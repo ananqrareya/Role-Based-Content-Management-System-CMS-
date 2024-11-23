@@ -1,7 +1,8 @@
 
 # Role-Based Content Management System (CMS)
 
-This project provides an API for managing content with role-based access control using **FastAPI**. It covers functionalities like user management, role and permission handling, article creation and publishing, category and tag management, and article comments.
+This project provides an API for managing content with role-based access control using FastAPI and SQLAlchemy. It supports features like user management, role and permission handling, article creation and publishing, category and tag management, and commenting. The system includes Alembic for database migrations and an automatic database creation feature.
+
 
 ---
 
@@ -13,8 +14,57 @@ Ensure that **Python 3.8+** is installed. Then, install the required dependencie
 ```bash
 pip install -r requirements.txt
 ```
+### Step 2: Configure the Database
+The project uses **PostgreSQL** as the database. Make sure **PostgreSQL** is installed and configured. The database details are as follows:
 
-### Step 2: Run the Application
+- **Database Name**:  cms_role_based
+- **User**: postgres
+- **Password**: root
+- **Host**: localhost
+
+If the database does not exist, it will be created automatically when the application starts.
+## Database Initialization Script
+The script automatically creates the database cms_role_based if it doesn't exist:
+
+``` 
+import psycopg2
+
+DATABASE_URL = "postgresql://postgres:root@localhost/cms_role_based"
+
+def create_database_if_not_exists():
+    try:
+        connection = psycopg2.connect(
+            dbname="postgres", user="postgres", password="root", host="localhost"
+        )
+        connection.autocommit = True
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT 1 FROM pg_database WHERE datname = 'cms_role_based'")
+        exists = cursor.fetchone()
+
+        if not exists:
+            cursor.execute("CREATE DATABASE cms_role_based")
+            print("Database created successfully.")
+        else:
+            print("Database already exists.")
+
+        cursor.close()
+        connection.close()
+    except Exception as e:
+        print(f"Error while creating the database: {e}")
+
+```
+ 
+
+### Step 3: Run Alembic Migrations 
+To apply database migrations:
+```bash
+alembic upgrade head
+```
+This will create the required tables for the application.
+
+
+### Step 4: Start the FastAPI Application
 Start the FastAPI application:
 
 ```bash
