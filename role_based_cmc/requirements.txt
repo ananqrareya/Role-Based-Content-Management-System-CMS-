@@ -1,17 +1,16 @@
-# FastAPI Framework
+
 fastapi==0.115.5
 
-# Uvicorn for running the ASGI server
 uvicorn==0.32.0
 
-# Pydantic for data validation and serialization
+
 pydantic==2.9.2
 
-# SQLAlchemy for ORM
+
 sqlalchemy==2.0.36
 
-# psycopg2-binary for PostgreSQL Database Adapter
+
 psycopg2 == 2.9.10
 
-# Alembic for database migrations
+
 alembic==1.14.0
