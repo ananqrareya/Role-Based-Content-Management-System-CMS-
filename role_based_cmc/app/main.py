@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-
+import app
 from app.routers.auth_routes import router as auth_routes
 from app.routers.user_routes import router as user_routes
 from app.routers.article_router import router as article_routes
@@ -9,11 +9,21 @@ from app.routers.permission_routes import router as permission_routes
 from app.routers.article_comment_router import router as comments_routes
 from app.routers.category_router import router as category_routes
 from app.routers.tag_router import router as tag_routes
+from app.scripts.initialize import initialize_data
+
+
+
 
 app = FastAPI(
     title="Role-Based Content Management System (CMS)",
     description="An API for managing content with role-based access control.",
 )
+
+
+@app.on_event("startup")
+def startup_event():
+    initialize_data()
+
 
 app.include_router(auth_routes, prefix="/api/auth", tags=["Authorization"])
 app.include_router(user_routes, prefix="/api/users", tags=["User Management"])

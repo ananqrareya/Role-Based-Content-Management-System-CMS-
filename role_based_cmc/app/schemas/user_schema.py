@@ -1,4 +1,5 @@
-from black import datetime
+from datetime import datetime
+
 from pydantic import BaseModel, Field, EmailStr, validator
 from uuid import UUID
 
@@ -15,13 +16,13 @@ class UserSchema(BaseModel):
         if not any(char.isdigit() for char in v):
             raise ValueError("Password must contain at least one number")
         if not any(char.upper() for char in v):
-            raise ValueError("Password must"
+            raise ValueError("Password must" ""
                              " contain at least one uppercase letter")
         if not any(char.lower() for char in v):
-            raise ValueError("Password must "
+            raise ValueError("Password must """
                              "contain at least one lowercase letter")
         if not any(char in "!@#%$*" for char in v):
-            raise ValueError("Password must "
+            raise ValueError("Password must """
                              "contain at least one special character")
         return v
 
@@ -44,7 +45,7 @@ class UserResponse(BaseModel):
                 "is_active": True,
                 "created_at": "2024-01-01T12:00:00",
                 "updated_at": "2024-11-18T15:00:00",
-                "role": "Admin",
+                "role": "Reader Or Author",
             }
         }
 
@@ -59,15 +60,15 @@ class RegisterRequest(UserSchema):
                     "username": "ananqrareya",
                     "email": "ananqrareya@gmail.com",
                     "password": "SecureP@ssw0rd123",
-                    "role": "Admin",
+                    "role": "Reader Or Author",
                 }
             ]
         }
 
 
 class RegisterResponse(BaseModel):
-
     user: UserResponse
+    message: str
 
     class Config:
         json_schema_extra = {
@@ -78,9 +79,9 @@ class RegisterResponse(BaseModel):
                     "username": "ananqrareya",
                     "email": "ananqrareya@gmail.com",
                     "is_active": True,
-                    "created_at": "2024-01-01T12:00:00",
-                    "updated_at": "2024-11-18T15:00:00",
-                    "role": "Admin",
+                    "created_at": "2024-01-01T12:00:00Z",
+                    "updated_at": "2024-11-18T15:00:00Z",
+                    "role": "Author",
                 },
             }
         }

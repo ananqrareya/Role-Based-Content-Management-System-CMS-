@@ -65,23 +65,38 @@ This will create the required tables for the application.
 
 
 ### Step 4: Start the FastAPI Application
-Start the FastAPI application:
-
+ 
+1. Start the FastAPI application:
 ```bash
 uvicorn main:app --reload
 ```
+2. When the application starts, it will automatically initialize the database with predefined roles and a default admin user using the @app.on_event("startup") lifecycle hook.
 
-The API will be available at: [http://localhost:8000](http://localhost:8000).
-
+### Roles Created
+- Admin
+- Editor
+- Author
+- Reader
+### Default Admin User
+- Email: admin@example.com
+- Username: Admin@123
+- Password: Admin
+- Role: Admin
+3. The API will be available at: http://localhost:8000.
+### Notes
+- The initialization process ensures the system is ready for immediate use by populating the database with essential data.
+### To verify:
+- Check the roles table for the predefined roles.
+- Confirm the admin user exists in the users table.
 ---
 
 ## API Endpoints
 
 ### Authorization
 - **POST** `/api/auth/login`: Login user.
-- **POST** `/api/auth/register`: Register a new user.
 
-### User Management
+## User Management
+- **POST** `/api/users/register`.
 - **GET** `/api/users/`: List all users (Admin only).
 - **GET** `/api/users/{user_id}`: Get a specific user (Admin only).
 - **PUT** `/api/users/{user_id}/role`: Update a user's role (Admin only).
@@ -128,7 +143,88 @@ The API will be available at: [http://localhost:8000](http://localhost:8000).
 - **DELETE** `/api/tags/{tag_id}`: Delete a tag.
 
 ---
+## Register New User
+- **POST** `/api/users/register`:
 
+###  Allows users to register for the system with role-based restrictions. Roles like "Admin" and "Editor" cannot be self-assigned during registration.
+### Request Payload:
+```
+{
+  "username": "example_user",
+  "email": "example_user@example.com",
+  "password": "securepassword",
+  "role": "Author"
+}
+```
+### Behavior:
+1. Role Validation: Users can only register with roles such as "Author" or "Reader." Attempting to register as "Admin" or "Editor" results in an error.
+2. Approval for Authors: Users registering as "Author" are marked as inactive by default and require admin approval.
+
+### Response:
+- Successful Registration (Reader):
+```angular2html
+{
+  "user": {
+    "id": 1,
+    "username": "example_user",
+    "email": "example_user@example.com",
+    "is_active": true,
+    "created_at": "2024-01-01T12:00:00Z",
+    "updated_at": "2024-01-01T12:00:00Z",
+    "role": "Reader"
+  },
+  "message": "User registered successfully"
+}
+```
+- Successful Registration (Author):
+```angular2html
+{
+  "user": {
+    "id": 2,
+    "username": "example_author",
+    "email": "example_author@example.com",
+    "is_active": false,
+    "created_at": "2024-01-01T12:00:00Z",
+    "updated_at": "2024-01-01T12:00:00Z",
+    "role": "Author"
+  },
+  "message": "Wait for the admin's approval to be able to enjoy the role's privileges"
+}
+```
+### Error Responses:
+- #### Restricted Role:
+```angular2html
+{
+  "detail": "You cannot register for this role."
+}
+
+```
+- #### Duplicate Email:
+```angular2html
+{
+  "detail": "Email 'example_user@example.com' already exists"
+}
+
+```
+- #### Duplicate Username:
+```angular2html
+{
+  "detail": "Username 'example_user' already exists"
+}
+
+```
+- #### Invalid Role:
+```angular2html
+{
+  "detail": "Role 'InvalidRole' does not exist"
+}
+
+```
+### Notes:
+- Passwords are hashed using bcrypt for security.
+- The registration process ensures that only valid roles are assigned to new users.
+- Admin approval is required for "Author" accounts to activate.
+---
 ## Running Locally
 
 1. Install dependencies from `requirements.txt`:
