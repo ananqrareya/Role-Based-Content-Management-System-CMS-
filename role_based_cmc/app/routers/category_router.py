@@ -1,7 +1,7 @@
 from typing import List
 
 from fastapi import APIRouter
-from app.schemas.category_schema import (
+from app.entities.schemas.category_schema import (
     CategoryResponse,
     CategoryCreate,
     CategoryUpdate,

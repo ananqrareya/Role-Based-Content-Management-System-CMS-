@@ -1,13 +1,13 @@
 from fastapi import APIRouter
 from typing import List, Optional
 
-from app.schemas.article_schema import (
+from app.entities.schemas.article_schema import (
     ArticleCreate,
     ArticleUpdate,
     ArticleResponse,
     ArticleStatusUpdate,
 )
-from app.enums.article_status import ArticleStatus
+from app.entities.enums.article_status import ArticleStatus
 from uuid import UUID
 
 router = APIRouter()

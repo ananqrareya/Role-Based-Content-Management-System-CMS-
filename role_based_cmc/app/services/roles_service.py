@@ -1,4 +1,4 @@
-from app.models import Roles
+from app.entities.models import Roles
 from app.repositories.role_repository import RoleRepository
 
 
@@ -12,3 +12,5 @@ class RoleService:
             new_role = Roles(name=role_name, description=f"{role_name} role")
             return self.role_repository.create_role(new_role)
         return existing_role
+
+

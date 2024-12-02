@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from uuid import UUID
 from typing import List
-from app.schemas.article_comment_schema import (
+from app.entities.schemas.article_comment_schema import (
     CommentResponse,
     CommentCreate,
     CommentUpdate,

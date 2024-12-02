@@ -5,11 +5,11 @@ from app.routers.auth_routes import router as auth_routes
 from app.routers.user_routes import router as user_routes
 from app.routers.article_router import router as article_routes
 from app.routers.role_routes import router as role_routes
-from app.routers.permission_routes import router as permission_routes
+
 from app.routers.article_comment_router import router as comments_routes
 from app.routers.category_router import router as category_routes
 from app.routers.tag_router import router as tag_routes
-from app.scripts.initialize import initialize_data
+
 
 
 
@@ -20,9 +20,6 @@ app = FastAPI(
 )
 
 
-@app.on_event("startup")
-def startup_event():
-    initialize_data()
 
 
 app.include_router(auth_routes, prefix="/api/auth", tags=["Authorization"])
@@ -32,11 +29,7 @@ app.include_router(
     prefix="/api/roles",
     tags=["Role Management (Admins Only)"],
 )
-app.include_router(
-    permission_routes,
-    prefix="/api/permissions",
-    tags=["Permissions (Admins Only)"],
-)
+
 app.include_router(
     article_routes,
     prefix="/api/articles",

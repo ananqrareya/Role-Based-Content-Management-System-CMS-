@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.models.User import User
+from app.entities.models.User import User
 
 
 class UserRepository:
@@ -14,7 +14,11 @@ class UserRepository:
         return self.db.query(User).filter(User.username == username).first()
 
     def create_user(self, user: User):
-        self.db.add(user)
-        self.db.commit()
-        self.db.refresh(user)
-        return user
+        try:
+            self.db.add(user)
+            self.db.commit()
+            self.db.refresh(user)
+            return user
+        except Exception as e:
+            self.db.rollback()
+            raise e

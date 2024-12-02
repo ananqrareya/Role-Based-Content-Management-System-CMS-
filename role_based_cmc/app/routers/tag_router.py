@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter
 
-from app.schemas.tag_schema import TagResponse, TagCreate
+from app.entities.schemas.tag_schema import TagResponse, TagCreate
 
 from uuid import UUID
 

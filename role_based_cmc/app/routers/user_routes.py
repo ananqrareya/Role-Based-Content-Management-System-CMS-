@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.repositories.role_repository import RoleRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.user_schema import (
+from app.entities.schemas.user_schema import (
     UserUpdateResponse,
     UserUpdateRequest,
     RegisterRequest,

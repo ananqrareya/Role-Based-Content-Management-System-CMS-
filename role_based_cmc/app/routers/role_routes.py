@@ -3,8 +3,8 @@ from typing import List
 from fastapi import APIRouter
 from uuid import UUID
 
-from app.schemas.permission_schema import PermissionBase
-from app.schemas.role_schema import (
+
+from app.entities.schemas.role_schema import (
     RoleResponse,
     RoleUpdateRequest,
     RoleCreateRequest,
@@ -38,15 +38,3 @@ def delete_role(role_id: int):
     pass
 
 
-@router.put(
-    "/{role_id}/permissions",
-    response_model=RoleResponse,
-    summary="Assign permissions to a role",
-)
-def assign_permissions(role_id: UUID, permissions: List[PermissionBase]):
-    pass
-
-
-@router.delete("/{role_id}/permissions/", response_model=RoleResponse)
-def delete_permissions(role_id: UUID):
-    pass

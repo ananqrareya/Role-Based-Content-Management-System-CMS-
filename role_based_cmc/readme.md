@@ -14,101 +14,81 @@ Ensure that **Python 3.8+** is installed. Then, install the required dependencie
 ```bash
 pip install -r requirements.txt
 ```
-### Step 2: Configure the Database
-The project uses **PostgreSQL** as the database. Make sure **PostgreSQL** is installed and configured. The database details are as follows:
+---
+## Database Initialization and Migrations
+This project includes both **Alembic migrations** for managing database schema changes and a script to initialize default roles and the admin user. Follow these steps to set up your database with the correct schema and essential data.
+### Step 1:Apply Alembic Migrations
+Before running the initialization script, you need to apply the Alembic migrations to ensure the schema (tables, columns, etc.) is set up correctly in your database.
 
-- **Database Name**:  cms_role_based
-- **User**: postgres
-- **Password**: root
-- **Host**: localhost
-
-If the database does not exist, it will be created automatically when the application starts.
-## Database Initialization Script
-The script automatically creates the database cms_role_based if it doesn't exist:
-
-``` 
-import psycopg2
-
-DATABASE_URL = "postgresql://postgres:root@localhost/cms_role_based"
-
-def create_database_if_not_exists():
-    try:
-        connection = psycopg2.connect(
-            dbname="postgres", user="postgres", password="root", host="localhost"
-        )
-        connection.autocommit = True
-        cursor = connection.cursor()
-
-        cursor.execute("SELECT 1 FROM pg_database WHERE datname = 'cms_role_based'")
-        exists = cursor.fetchone()
-
-        if not exists:
-            cursor.execute("CREATE DATABASE cms_role_based")
-            print("Database created successfully.")
-        else:
-            print("Database already exists.")
-
-        cursor.close()
-        connection.close()
-    except Exception as e:
-        print(f"Error while creating the database: {e}")
-
-```
- 
-
-### Step 3: Run Alembic Migrations 
-To apply database migrations:
+Run the following command to apply all migrations:
 ```bash
 alembic upgrade head
 ```
-This will create the required tables for the application.
+This will apply any schema changes that are defined in your migration files, creating the necessary tables and structures based on your models.
 
 
-### Step 4: Start the FastAPI Application
- 
-1. Start the FastAPI application:
+### Step 2:Configure the Database
+Ensure **PostgreSQL** is installed and configured on your system. You should also update your **settings.py** file with the correct database credentials.
+
+- **Database Name**: cms_role_based
+- ****User**:** postgres
+- ****Password**:** root
+- **Host:** localhost
+
+### Step 3:Initialize the Database and Create Default Roles
+After applying migrations, you can run the initialize.py script to create the default roles and admin user. This script will check if the database exists, create the necessary roles (Admin, Editor, Reader), and add a default admin user.
+
+1. Navigate to the scripts/ directory where initialize.py is located.
+2. Run the initialization script:
 ```bash
-uvicorn main:app --reload
-```
-2. When the application starts, it will automatically initialize the database with predefined roles and a default admin user using the @app.on_event("startup") lifecycle hook.
+python scripts/initialize.py
 
-### Roles Created
-- Admin
-- Editor
-- Author
-- Reader
-### Default Admin User
-- Email: admin@example.com
-- Username: Admin@123
-- Password: Admin
-- Role: Admin
-3. The API will be available at: http://localhost:8000.
-### Notes
-- The initialization process ensures the system is ready for immediate use by populating the database with essential data.
-### To verify:
-- Check the roles table for the predefined roles.
-- Confirm the admin user exists in the users table.
----
+```
+
+### Step 4: What the Script Does
+- **Database Creation**: The script checks if the database (cms_role_based) exists. If not, it creates the database.
+
+- **Role Setup**: The script creates the following default roles:
+   1. Admin
+   2. Editor
+   3. Author
+   4. Reader
+- **Admin User**: The script creates a default admin user with the following credentials:
+   - Email: admin@example.com
+   - Username: admin
+   - Password: Admin@123
+   - Role: Admin
+The script will print messages indicating whether the database was created or if the roles and admin user were successfully initialized.
+
+### Step 5: Verify Database and Users
+You can verify that the database, roles, and users have been correctly initialized by connecting to your **PostgreSQL** database:
+```bash
+psql -h localhost -U postgres -d cms_role_based
+```
+Once connected, check the roles and users tables:
+
+```sql
+SELECT * FROM roles;
+SELECT * FROM users;
+```
+
 
 ## API Endpoints
 
 ### Authorization
 - **POST** `/api/auth/login`: Login user.
 
-## User Management
+### User Management
 - **POST** `/api/users/register`.
 - **GET** `/api/users/`: List all users (Admin only).
 - **GET** `/api/users/{user_id}`: Get a specific user (Admin only).
 - **PUT** `/api/users/{user_id}/role`: Update a user's role (Admin only).
-
+- **PUT** `/api/users/{user_id}/approve`: Admin approves a user with the Author role.
 ### Role and Permission Management
 - **POST** `/api/roles`: Create a role.
 - **PUT** `/api/roles`: Update a role.
 - **GET** `/api/roles`: Get all roles.
 - **DELETE** `/api/roles/{role_id}`: Delete a role.
-- **PUT** `/api/roles/{role_id}/permissions`: Assign permissions to a role.
-- **DELETE** `/api/roles/{role_id}/permissions`: Remove permissions from a role.
-- **GET** `/api/permissions`: Get all available permissions (Admin only).
 
 ### Article Management
 - **POST** `/api/articles/`: Create an article (Author only).
@@ -224,6 +204,55 @@ uvicorn main:app --reload
 - Passwords are hashed using bcrypt for security.
 - The registration process ensures that only valid roles are assigned to new users.
 - Admin approval is required for "Author" accounts to activate.
+---
+## Authentication : 
+### POST `/api/auth/login` : 
+**This endpoint allows a user to log in using their username and password. Upon successful authentication, an access token will be issued, which can be used for subsequent requests requiring authentication.**
+#### Request: 
+- **Body:** A **LoginRequest** containing the username and password of the user:
+```json
+{
+  "username": "user_example",
+  "password": "user_password"
+}
+```
+#### Response:
+-Success: Upon successful login, the response will return an access token and the token type:
+```json
+{
+  "access_token": "your_access_token_here",
+  "token_type": "bearer"
+}
+```
+- Error: If the credentials are invalid, a 401 Unauthorized status will be returned:
+```json
+{
+  "detail": "Invalid credentials"
+}
+
+```
+### Token Management
+**After the user successfully logs in, an access token is created using JWT (JSON Web Token). This token is used for authentication in subsequent requests that require the user to be logged in.**
+
+#### Token Creation:
+**The create_access_token function creates a JWT token that encodes the user's username and role. The token expires after a specified period defined in the settings.**
+ - Expiration: The token expires after a set period (default: 15 minutes) and needs to be refreshed or re-authenticated.
+
+#### Token Verification:
+To verify the token, use the verify_access_token function. It checks whether the token is valid and whether it has expired. If the token is invalid or expired, a 401 Unauthorized error is returned.
+
+#### Revoke and Deactivate Tokens:
+Tokens can be revoked by the admin or deactivated if expired. The UserTokenService provides methods to manage token deactivation and revocation.
+* Revoke Token: Admin or authorized users can revoke a token to invalidate it manually.
+* Deactivate Expired Tokens: Expired tokens are automatically deactivated to ensure that only active tokens are valid.
+
+#### **Notes on Token Management:**
+**Token Expiry: JWT tokens expire based on the configuration in the settings.py file. Ensure the expiration time is set properly.**
+
+
+
+
+
 ---
 ## Running Locally
 

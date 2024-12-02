@@ -13,17 +13,14 @@ config = context.config
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
-from app.models.Roles import Roles
-from app.models.Permissions import Permissions
-from app.models.RolePermissions import RolePermissions
-from app.models.User import User
-from app.models.UserTokens import UserTokens
-from app.models.Categories import Categories
-from app.models.Tags import Tags
-from app.models.Articles import Articles
-from app.models.ArticleTags import ArticleTags
-from app.models.Comments import Comments
+from app.entities.models.Roles import Roles
+from app.entities.models.User import User
+from app.entities.models.UserTokens import UserTokens
+from app.entities.models.Categories import Categories
+from app.entities.models.Tags import Tags
+from app.entities.models.Articles import Articles
+from app.entities.models.ArticleTags import ArticleTags
+from app.entities.models.Comments import Comments
 from app.core.database import Base
 target_metadata = Base.metadata
 
