@@ -1,3 +1,4 @@
+from sqlalchemy.orm import Session
 
 from app.core.database_config import SessionLocal, engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -5,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 def get_db():
-    db = SessionLocal()
+    db :Session = SessionLocal()
     try:
         yield db
     finally:

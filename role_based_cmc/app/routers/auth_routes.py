@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.post("/login", summary="Login user", response_model=LoginResponse)
-async def login_user(user: LoginRequest =Depends() , db: Session = Depends(get_db)):
+async def login_user(user: LoginRequest  , db: Session = Depends(get_db)):
     user_repository = UserRepository(db)
     user_service = UserService(user_repository)
     user_token_repository=UserTokenRepository(db)

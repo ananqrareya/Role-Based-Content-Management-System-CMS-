@@ -17,13 +17,25 @@ class UserTokenRepository:
             self.db_session.add(token)
             self.db_session.commit()
             self.db_session.refresh(token)
+            print(f"Token successfully saved: {token.token[:20]}...")  # Log for confirmation
+
             return token
         except Exception as e:
+            print(f"Error while saving token to database: {str(e)}")
             self.db_session.rollback()
             raise e
 
     def get_token_is_active(self,token:str):
-        return self.db_session.query(UserTokens).filter_by(token=token, is_active=True).first()
+        try:
+            token_active = self.token_repository.get_token_is_active(token)
+            if not token_active:
+                print(f"No active token found for: {token[:20]}...")
+            else:
+                print(f"Active token retrieved: {token_active.token[:20]}...")
+            return token_active
+        except Exception as e:
+            print(f"Error retrieving active token: {str(e)}")
+            raise
 
     def deactivate_expired_token_of_user(self,user:User,current_time:datetime):
         self.db_session.query(UserTokens).filter(

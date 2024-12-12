@@ -15,8 +15,12 @@ from app.entities.schemas.user_schema import (
     UserResponse,
 )
 from app.services.user_service import UserService
+from app.utils.auth_utils import verify_access_token
+
+
 
 router = APIRouter()
+
 
 
 @router.post("/register", summary="Register new user",
@@ -61,10 +65,10 @@ def update_user_role(user_id: int, user: UserUpdateRequest):
 
 
 @router.get(
-    "/", summary="List all users Role (Admin Only)", response_model=List[UserResponse]
+    "/", summary="List all users Role (Admin Only)"
 )
 def get_users():
-    pass
+    return "Hello all"
 
 
 @router.get(
@@ -74,3 +78,9 @@ def get_users():
 )
 def get_user(user_id: int):
     pass
+
+
+@router.post("/token")
+def check_token(token:str,db: Session = Depends(get_db)):
+    print("Token send:",token)
+    return verify_access_token(token,db)

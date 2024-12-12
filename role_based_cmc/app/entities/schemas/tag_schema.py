@@ -9,7 +9,7 @@ class TagCreate(BaseModel):
         json_schema_extra = {"example": {"name": "Technology"}}
 
 
-class TagResponse(BaseModel):
+class Tag(BaseModel):
     id: UUID
     name: str
 
@@ -18,5 +18,18 @@ class TagResponse(BaseModel):
             "example": {
                 "id": "550e8400-e29b-41d4-a716-446655440000",
                 "name": "Technology",
+            }
+        }
+class TagResponse(BaseModel):
+    tag:Tag
+    message:str
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "Tag":{
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "name": "Technology",
+                },
+                "message": "Tag created"
             }
         }

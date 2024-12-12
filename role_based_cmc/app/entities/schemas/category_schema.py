@@ -22,7 +22,7 @@ class CategoryCreate(BaseModel):
         }
 
 
-class CategoryResponse(BaseModel):
+class Category(BaseModel):
     id: UUID
     name: str
     description: str
@@ -36,6 +36,20 @@ class CategoryResponse(BaseModel):
                                "programming languages and techniques.",
             }
         }
+class CategoryResponse(BaseModel):
+    category: Category
+    message:str
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "message": "The category was successfully created.",
+                "category":{
+                    "id":"550e8400-e29b-41d4-a716-446655440000",
+                    "name":"Programming",
+                    "description":"Articles about "
+                }
+            }
+        }
 
 
 class CategoryUpdate(BaseModel):
@@ -43,7 +57,9 @@ class CategoryUpdate(BaseModel):
         None, max_length=55, description="Name of the category, must be unique"
     )
     description: Optional[str] = Field(
-        None, max_length=50, description="Description of the category"
+        default=None,
+        max_length=255,
+        description="Description of the category",
     )
 
     class Config:
@@ -51,10 +67,22 @@ class CategoryUpdate(BaseModel):
             "examples": [
                 {
                     "name": "Programming Api",
-                    "description": "Articles about "
-                                   "programming languages and techniques.",
+                    "description": "Articles about programming languages and techniques.",
                 }
             ]
+        }
+class CategoryUpdateResponse(BaseModel):
+    category: CategoryUpdate
+    message:str
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "message": "The category was successfully updated.",
+                "category":{
+                    "name": "Programming",
+                    "description": "Articles about programming languages and techniques.",
+                }
+            }
         }
 
 

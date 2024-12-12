@@ -14,14 +14,19 @@ class UserTokenService:
         self.user_repository = user_repository
 
     def store_user_token(self, user_id, token,expires_at):
-
+     try:
         user_token=UserTokens(
             user_id=user_id,
             token=token,
             expires_at=expires_at,
             is_active=True
         )
-        self.token_repository.save_token(user_token)
+        saved_token=self.token_repository.save_token(user_token)
+        print(f"Token stored for user {user_id}: {saved_token.token[:20]}...")  # Log part of token for security
+        return saved_token
+     except Exception as e:
+         print(f"Error saving token for user {user_id}: {str(e)}")
+         raise
 
     def get_token_is_active(self, token:str):
         token_active=self.token_repository.get_token_is_active(token)

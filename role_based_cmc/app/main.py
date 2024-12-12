@@ -11,9 +11,6 @@ from app.routers.category_router import router as category_routes
 from app.routers.tag_router import router as tag_routes
 
 
-
-
-
 app = FastAPI(
     title="Role-Based Content Management System (CMS)",
     description="An API for managing content with role-based access control.",
