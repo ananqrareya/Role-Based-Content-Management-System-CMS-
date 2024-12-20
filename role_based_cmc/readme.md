@@ -86,11 +86,8 @@ SELECT * FROM users;
 - **GET** `/api/users/inactive/` : Get all users who have the role (author) and are waiting for activation from the admin
 - **PUT** `/api/users/{user_id}/active/`: Admin approves a user with the Author role.
 ### Role and Permission Management
-- **POST** `/api/roles`: Create a role.
-- **PUT** `/api/roles`: Update a role.
 - **GET** `/api/roles`: Get all roles.
 - **GET** `/api/roles/{role_id}/users/`: Get role with users.
-- **DELETE** `/api/roles/{role_id}`: Delete a role.
 
 ### Article Management
 - **POST** `/api/articles/`: Create an article (Author only).
@@ -99,16 +96,21 @@ SELECT * FROM users;
 - **PUT** `/api/articles/{article_id}`: Update an article.
 - **DELETE** `/api/articles/{article_id}`: Delete an article (Admin/Editor only).
 - **PATCH** `/api/articles/{article_id}/status`: Update article status (Admin/Editor only).
-- **PUT** `/api/articles/{article_id}/submit`: Submit an article for review (Author only).
 - **PUT** `/api/articles/{article_id}/publish`: Publish an article (Admin/Editor only).
-- **GET** `/api/articles/published`: Get all published articles (Readers).
-- **GET** `/api/articles/search`: Search articles based on categories, tags, or keywords (Readers).
-- **GET** `/api/articles/filter`: Filter articles by status, author, or creation date (Readers).
+
+### Author 
+- **GET** `/api/authors/articles/`: Get all articles(Author)
+- **PUT** `/api/authors/articles/{article_id}/submit`: Submit Article for Review
+
+### Reader
+- **GET** `/api/readers/article/all-published`: Get All Published Article
+- **GET** `/api/readers/article/search` Search Articles
+- **GET** `/api/readers/article/filter` Filter Articles 
 
 ### Comments
 - **POST** `/api/comments/{article_id}`: Add a comment to an article.
 - **GET** `/api/comments/{article_id}`: Get comments for a specific article.
-- **PUT** `/api/comments/comment/{comment_id}`: Update a comment.
+- **PUT** `/api/comments/comment/{comment_id}`: Update a comment (Admin/Editor only).
 - **DELETE** `/api/comments/{article_id}`: Delete a comment (Admin/Editor only).
 
 ### Categories
@@ -251,6 +253,70 @@ Tokens can be revoked by the admin or deactivated if expired. The UserTokenServi
 #### **Notes on Token Management:**
 **Token Expiry: JWT tokens expire based on the configuration in the settings.py file. Ensure the expiration time is set properly.**
 
+ ---
+# Middleware Security 
+## Overview
+**The application uses JWT (JSON Web Token) middleware to secure API endpoints. This middleware verifies tokens in request headers, authenticates users, and enforces role-based access control (RBAC).**
+
+
+### JWT Middleware
+The JWTMiddleware class ensures secure communication by:
+1. Public Path Handling: Bypassing authentication for specified public endpoints.
+2. Token Verification: Validating tokens to check their authenticity and expiration status.
+3. User Context: Extracting user information from tokens and making it available in the request state.
+```python
+class JWTMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, public_paths: list[str] = None):
+        self.public_paths = public_paths or []
+        super().__init__(app)
+
+    async def dispatch(self, request: Request, call_next):
+        if request.url.path in self.public_paths:
+            return await call_next(request)
+        try:
+            db = next(get_db())
+            user_token_service = UserTokenService(db=db)
+            payload = verify_access_token(request, user_token_service)
+            request.state.user = payload
+            response = await call_next(request)
+            return response
+        except HTTPException as exc:
+            return JSONResponse(content={"detail": exc.detail}, status_code=exc.status_code)
+        except Exception as exc:
+            return JSONResponse(content={"detail": f"Error: {str(exc)}"}, status_code=500)
+```
+### Role-Based Access Control
+RBAC is enforced via the **require_role** function, ensuring that only users with specific roles can access certain endpoints.
+
+```python
+def require_role(allowed_roles: list):
+    def role_checker(request: Request):
+        user = getattr(request.state, "user", None)
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized: No user data found")
+        user_role = user.get("role")
+        if user_role not in allowed_roles:
+            raise HTTPException(status_code=403, detail="Forbidden: Insufficient role permissions")
+
+    return role_checker
+```
+#### Example Endpoint with Role-Based Access
+The following endpoint demonstrates how to restrict access to users with "Admin," "Editor," or "Author" roles:
+```python
+@router.post(
+    "/",
+    response_model=ArticleResponse,
+    summary="Create an Article (Author)",
+    description="Allows authors to create a new article with a default status of 'Draft'.",
+    dependencies=[Depends(require_role(["Admin", "Editor", "Author"]))],
+)
+
+```
+## Key Features
+1. Global Middleware Security: Secures all API endpoints unless explicitly added to the public_paths.
+2. Role-Based Control: Ensures endpoint access is limited to users with sufficient permissions.
+3. Error Handling: Provides meaningful error messages (401 for unauthorized access, 403 for insufficient roles).
+4. Configurable Paths: Specify public paths to allow unauthenticated access where necessary.
 
 
 
@@ -276,20 +342,18 @@ To test the endpoints, use tools like **Postman** or **cURL**. Alternatively, yo
 
 ---
 
-## Future Modifications
+## Development Notes:
+### Security
+* Passwords are hashed using bcrypt for storage security.
+* Authentication and authorization are handled using JWT tokens.
+* The system ensures role-based restrictions for each endpoint to maintain secure access to resources.
 
-The following features and enhancements are planned for the future:
-1. **Database Integration**:
-   - Add a database to store users, roles, articles, comments, categories, and tags.
-   - Use an ORM like SQLAlchemy to handle migrations and models.
-2. **Enhanced Security**:
-   - Implement JWT-based authentication for secure token generation and validation.
-   - Ensure role-based permissions are strictly enforced.
-3. **Full API Functionality**:
-   - Ensure each API endpoint is fully functional with the database.
-   - Improve the ability to filter, search, and sort data.
-4. **Advanced Authorization**:
-   - Add granular permission management for roles.
-   - Allow admins to customize access levels for each role dynamically.
+### Middleware
+The API uses middleware to enforce authentication and validate permissions. Each role has specific capabilities, ensuring a robust access control mechanism.
+
+### Testing
+To test the API, use tools like Postman or curl. Ensure that a valid JWT token is included in the Authorization header for requests that require authentication.
+
+
 
 ---
