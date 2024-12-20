@@ -16,14 +16,17 @@ class UserSchema(BaseModel):
         if not any(char.isdigit() for char in v):
             raise ValueError("Password must contain at least one number")
         if not any(char.upper() for char in v):
-            raise ValueError("Password must" ""
-                             " contain at least one uppercase letter")
+            raise ValueError(
+                "Password must" "" " contain at least one uppercase letter"
+            )
         if not any(char.lower() for char in v):
-            raise ValueError("Password must """
-                             "contain at least one lowercase letter")
+            raise ValueError(
+                "Password must " "" "contain at least one lowercase letter"
+            )
         if not any(char in "!@#%$*" for char in v):
-            raise ValueError("Password must """
-                             "contain at least one special character")
+            raise ValueError(
+                "Password must " "" "contain at least one special character"
+            )
         return v
 
 

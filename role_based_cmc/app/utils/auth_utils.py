@@ -1,71 +1,71 @@
-from http.client import HTTPException
-
 import jwt
-from datetime import datetime, timedelta
-
-import jwt
-from datetime import datetime, timedelta
-
-from sqlalchemy.orm import Session
-
+from datetime import datetime, timedelta, timezone
+from starlette.requests import Request
+from fastapi import HTTPException
 from app.core.config import settings
-from app.entities.models import UserTokens
-from app.repositories.user_repository import UserRepository
-from app.repositories.user_token_repository import UserTokenRepository
 from app.services.user_service import UserService
 from app.services.user_token_service import UserTokenService
 
 
-def create_access_token(data: dict, session: Session):
+def create_access_token(
+    data: dict, user_service: UserService, user_token_service: UserTokenService
+):
     to_encode = data.copy()
 
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    )
+    to_encode.update({"exp": expire})
 
-    print(f"ACCESS_TOKEN_EXPIRE_MINUTES: {settings.ACCESS_TOKEN_EXPIRE_MINUTES}")
+    encoded_jwt = jwt.encode(
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+    )
 
+    user = user_service.get_user_by_username(data["sub"])
 
-    expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire.timestamp()})
-
-    print(f"Creating token for user: {data['sub']}")
-    print(f"Token expires at: {expire}")
-
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-    print(f"Generated JWT token: {encoded_jwt[:20]}...")  # Log only part of the token for security
-
-    user_token_repository = UserTokenRepository(session)
-    user_token_service = UserTokenService(user_token_repository)
-    user_repository = UserRepository(session)
-    user_service = UserService(user_repository, None)
-    user = user_service.get_user_by_username(data['sub'])
-
-    user_token = user_token_service.store_user_token(user.id, encoded_jwt, expire)
-    print(f"Stored token for user {data['sub']} in the database, expires at {expire}")
+    user_token_service.store_user_token(user.id, encoded_jwt, expire)
 
     return encoded_jwt
 
-def verify_access_token(token: str, db: Session):
+
+def get_token_from_request(request: Request):
+    authorization_header = request.headers.get("Authorization")
+    if not authorization_header:
+        raise HTTPException(status_code=401,
+                            detail="Missing Authorization header")
+    parts = authorization_header.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(
+            status_code=401, detail="Invalid Authorization header format"
+        )
+    return parts[1]
+
+
+def verify_access_token(request: Request,
+                        user_token_service: UserTokenService):
+
+    token = get_token_from_request(request)
     try:
         payload = jwt.decode(
             token,
             settings.SECRET_KEY,
             algorithms=[settings.ALGORITHM],
-            leeway=10
         )
-        print(f"Decoded token payload: {payload}")
 
-        user_token_repository = UserTokenRepository(db)
-        user_token_service = UserTokenService(user_token_repository)
-        token_in_db = user_token_service.get_token_is_active(token)
+        token_in_db = user_token_service.get_token_active(token)
 
-        print("token in db:",token_in_db)
-        if not token_in_db or token_in_db.expires_at < datetime.utcnow():
-            raise HTTPException(status_code=401, detail="Invalid or expired token")
+        if not token_in_db or token_in_db.expires_at < datetime.now(
+            timezone.utc
+        ).replace(tzinfo=None):
+            raise HTTPException(status_code=401,
+                                detail="Invalid or expired token")
 
-        print(f"Token for user {payload['sub']} is valid.")
         return payload
 
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token is invalid")
-    except Exception as exc:
-        print(f"Unexpected error during token verification: {str(exc)}")
-        raise HTTPException(status_code=500, detail="Internal server error during token verification")
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error during token verification"
+        )

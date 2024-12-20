@@ -83,11 +83,13 @@ SELECT * FROM users;
 - **GET** `/api/users/`: List all users (Admin only).
 - **GET** `/api/users/{user_id}`: Get a specific user (Admin only).
 - **PUT** `/api/users/{user_id}/role`: Update a user's role (Admin only).
-- **PUT** `/api/users/{user_id}/approve`: Admin approves a user with the Author role.
+- **GET** `/api/users/inactive/` : Get all users who have the role (author) and are waiting for activation from the admin
+- **PUT** `/api/users/{user_id}/active/`: Admin approves a user with the Author role.
 ### Role and Permission Management
 - **POST** `/api/roles`: Create a role.
 - **PUT** `/api/roles`: Update a role.
 - **GET** `/api/roles`: Get all roles.
+- **GET** `/api/roles/{role_id}/users/`: Get role with users.
 - **DELETE** `/api/roles/{role_id}`: Delete a role.
 
 ### Article Management

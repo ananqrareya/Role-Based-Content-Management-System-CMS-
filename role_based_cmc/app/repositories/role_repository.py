@@ -1,5 +1,6 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.entities.models.Roles import Roles
+from uuid import UUID
 
 
 class RoleRepository:
@@ -9,6 +10,9 @@ class RoleRepository:
     def get_role_by_name(self, role_name: str) -> Roles:
         return (self.session.query(Roles)
                 .filter(Roles.name == role_name).first())
+
+    def get_role_by_id(self, role_id: UUID) -> Roles:
+        return self.session.query(Roles).filter_by(id=role_id).first()
 
     def create_role(self, role: Roles) -> Roles:
 
@@ -25,5 +29,7 @@ class RoleRepository:
     def get_all_roles(self) -> list[Roles]:
         return self.session.query(Roles).all()
 
-    def delete_role(self, role_name: str):
-        raise ValueError("Deleting roles is not allowed.")
+    def get_role_with_users(self, role: Roles) -> Roles:
+        return (self.session.query(Roles)
+                .options(joinedload(Roles.users))
+                .filter_by(id=role.id).first())

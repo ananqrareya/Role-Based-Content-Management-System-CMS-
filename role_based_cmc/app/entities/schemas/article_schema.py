@@ -8,9 +8,10 @@ from uuid import UUID
 
 
 class ArticleSchema(BaseModel):
+
     title: str = Field(..., max_length=55, description="Title of the article")
     content: str
-    tag: List[str]
+    tags: List[str]
     category: str
 
     class Config:
@@ -61,7 +62,6 @@ class ArticleUpdate(BaseModel):
     content: Optional[str] = Field(None)
     tags: Optional[List[str]] = Field(None)
     category: Optional[str] = Field(None)
-    status: Optional[ArticleStatus] = Field(None)
 
     class Config:
         json_schema_extra = {
@@ -71,7 +71,6 @@ class ArticleUpdate(BaseModel):
                     "content": "Revised content for the guide.",
                     "tags": ["Python", "Guide"],
                     "category": "programming",
-                    "status": "In Review",
                 }
             ]
         }
@@ -85,6 +84,7 @@ class ArticleStatusUpdate(BaseModel):
 
 
 class ArticleResponse(ArticleSchema):
+    id: UUID
     status: str
     author: str
     created_at: datetime
@@ -100,6 +100,33 @@ class ArticleResponse(ArticleSchema):
                     "category": "Programming",
                     "status": "In Review",
                     "author": "anan",
+                    "created_at": "2024-11-18T12:34:56",
+                    "updated_at": "2024-11-18T12:34:56",
+                }
+            ]
+        }
+
+
+class AuthorArticleResponse(BaseModel):
+    id: UUID
+    title: str
+    content: str
+    tags: List[str]
+    category: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        json_schema_extra = {
+            "examples": [
+                {
+                    "id": "660e8400-e29b-41d4-a716-446655440000",
+                    "title": "Introduction to FastAPI",
+                    "content": "Learn the basics of FastAPI...",
+                    "tags": ["Python", "Validation"],
+                    "category": "programming",
+                    "status": "In Review",
                     "created_at": "2024-11-18T12:34:56",
                     "updated_at": "2024-11-18T12:34:56",
                 }

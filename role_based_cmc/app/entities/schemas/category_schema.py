@@ -17,7 +17,7 @@ class CategoryCreate(BaseModel):
             "example": {
                 "name": "Programming",
                 "description": "Articles about "
-                               "programming languages and techniques.",
+                "programming languages and techniques.",
             }
         }
 
@@ -33,21 +33,24 @@ class Category(BaseModel):
                 "id": "550e8400-e29b-41d4-a716-446655440000",
                 "name": "Programming",
                 "description": "Articles about "
-                               "programming languages and techniques.",
+                "programming languages and techniques.",
             }
         }
+
+
 class CategoryResponse(BaseModel):
     category: Category
-    message:str
+    message: str
+
     class Config:
         json_schema_extra = {
             "example": {
                 "message": "The category was successfully created.",
-                "category":{
-                    "id":"550e8400-e29b-41d4-a716-446655440000",
-                    "name":"Programming",
-                    "description":"Articles about "
-                }
+                "category": {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "name": "Programming",
+                    "description": "Articles about ",
+                },
             }
         }
 
@@ -67,21 +70,26 @@ class CategoryUpdate(BaseModel):
             "examples": [
                 {
                     "name": "Programming Api",
-                    "description": "Articles about programming languages and techniques.",
+                    "description": "Articles about programming "
+                                   "languages and techniques.",
                 }
             ]
         }
+
+
 class CategoryUpdateResponse(BaseModel):
     category: CategoryUpdate
-    message:str
+    message: str
+
     class Config:
         json_schema_extra = {
             "example": {
                 "message": "The category was successfully updated.",
-                "category":{
+                "category": {
                     "name": "Programming",
-                    "description": "Articles about programming languages and techniques.",
-                }
+                    "description": "Articles about programming"
+                                   " languages and techniques.",
+                },
             }
         }
 
@@ -98,7 +106,7 @@ class CategoryWithArticles(BaseModel):
                 "id": "550e8400-e29b-41d4-a716-446655440000",
                 "name": "Programming",
                 "description": "Articles about "
-                               "programming languages and techniques.",
+                "programming languages and techniques.",
                 "articles": [
                     {
                         "id": "660e8400-e29b-41d4-a716-446655440000",

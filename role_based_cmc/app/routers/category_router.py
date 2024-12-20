@@ -1,23 +1,19 @@
 from typing import List
-
-from conda_env.cli.main_list import description
-from fastapi import APIRouter,HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
-from requests import delete
-from sqlalchemy.orm import Session
-
-from app.core.database import get_db
-from app.entities.models import Categories
+from app.entities.schemas.article_schema import ArticleBrief
 from app.entities.schemas.category_schema import (
     CategoryResponse,
     CategoryCreate,
     CategoryUpdate,
-    CategoryWithArticles, Category, CategoryUpdateResponse,
+    CategoryWithArticles,
+    Category,
+    CategoryUpdateResponse,
 )
 from uuid import UUID
 
-from app.repositories.categories_repository import CategoriesRepository
 from app.services.categories_service import CategoriesService
+from app.utils.fastapi.dependencies import require_role
 
 router = APIRouter()
 
@@ -27,13 +23,14 @@ router = APIRouter()
     summary="Create Category",
     description="Allows Admins and Editors to create a new category.",
     response_model=CategoryResponse,
+    dependencies=[Depends(require_role(["Admin", "Editor"]))],
 )
-def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
-    category_repository = CategoriesRepository(db)
-    category_service=CategoriesService(category_repository)
+async def create_category(
+    category: CategoryCreate, category_service: CategoriesService = Depends()
+):
     try:
         new_category = category_service.create_category(category)
-        message="The category was successfully created."
+        message = "The category was successfully created."
         return CategoryResponse(
             category=Category(
                 id=new_category.id,
@@ -46,26 +43,26 @@ def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-
-
-
 @router.put(
     "/{category_id}",
     summary="Update Category",
     description="Allows Admins and Editors to update an existing category.",
     response_model=CategoryUpdateResponse,
+    dependencies=[Depends(require_role(["Admin", "Editor"]))],
 )
-def update_category(category_id: UUID, category: CategoryUpdate , db: Session = Depends(get_db)):
+async def update_category(
+    category_id: UUID,
+    category: CategoryUpdate,
+    category_service: CategoriesService = Depends(),
+):
     try:
-        category_repository = CategoriesRepository(db)
-        category_service = CategoriesService(category_repository)
-        updated_category = category_service.update_category(category_id, category)
-        message="The category was successfully updated."
+        updated_category = (category_service
+                            .update_category(category_id, category))
+        message = "The category was successfully updated."
         return CategoryUpdateResponse(
             category=CategoryUpdate(
                 name=updated_category.name,
                 description=updated_category.description,
-
             ),
             message=message,
         )
@@ -78,13 +75,14 @@ def update_category(category_id: UUID, category: CategoryUpdate , db: Session = 
     summary="Delete Category",
     description="Allows Admins and Editors to delete a category.",
     response_model=CategoryResponse,
+    dependencies=[Depends(require_role(["Admin", "Editor"]))],
 )
-def delete_category(category_id: UUID,db: Session = Depends(get_db)):
+async def delete_category(
+    category_id: UUID, category_service: CategoriesService = Depends()
+):
     try:
-        category_repository = CategoriesRepository(db)
-        category_service = CategoriesService(category_repository)
-        category_delete=category_service.delete_category(category_id)
-        message="The category was successfully deleted."
+        category_delete = category_service.delete_category(category_id)
+        message = "The category was successfully deleted."
         return CategoryResponse(
             category=Category(
                 id=category_delete.id,
@@ -95,8 +93,9 @@ def delete_category(category_id: UUID,db: Session = Depends(get_db)):
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="An unexpected error occurred")
+    except Exception:
+        raise HTTPException(status_code=500,
+                            detail="An unexpected error occurred")
 
 
 @router.get(
@@ -104,16 +103,14 @@ def delete_category(category_id: UUID,db: Session = Depends(get_db)):
     summary="Get All Categories",
     description="Fetches a list of all categories.",
     response_model=List[Category],
+    dependencies=[Depends(require_role(["Admin", "Editor"]))],
 )
-def get_all_categories(db:Session=Depends(get_db)):
+async def get_all_categories(category_service: CategoriesService = Depends()):
     try:
-        category_repository = CategoriesRepository(db)
-        category_service = CategoriesService(category_repository)
-        categories=category_service.get_all_categories()
+        categories = category_service.get_all_categories()
         return [
             Category(
-                id=category.id,
-                name=category.name,
+                id=category.id, name=category.name,
                 description=category.description
             )
             for category in categories
@@ -122,18 +119,18 @@ def get_all_categories(db:Session=Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
 @router.get(
     "/{category_id}",
     summary="Get Category",
     description="Fetches a specific category.",
     response_model=CategoryResponse,
+    dependencies=[Depends(require_role(["Admin", "Editor"]))],
 )
-def get_category(category_id: UUID,db:Session=Depends(get_db)):
+async def get_category(
+    category_id: UUID, category_service: CategoriesService = Depends()
+):
     try:
-        category_repository = CategoriesRepository(db)
-        category_service = CategoriesService(category_repository)
-        category=category_service.get_category_by_id(category_id)
+        category = category_service.get_category_by_id(category_id)
         return CategoryResponse(
             category=Category(
                 id=category.id,
@@ -143,8 +140,7 @@ def get_category(category_id: UUID,db:Session=Depends(get_db)):
             message="Successfully fetched category.",
         )
     except ValueError as e:
-        raise HTTPException(status_code=500,detail=str(e))
-
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get(
@@ -153,6 +149,24 @@ def get_category(category_id: UUID,db:Session=Depends(get_db)):
     description="Fetches a specific category along with "
                 "its associated articles.",
     response_model=CategoryWithArticles,
+    dependencies=[Depends(require_role(["Admin", "Editor", "Reader"]))],
 )
-def get_category_with_articles(category_id: UUID):
-    pass
+async def get_category_with_articles(
+    category_id: UUID, category_service: CategoriesService = Depends()
+):
+    try:
+        category = category_service.get_category_by_id(category_id)
+        articles = [
+            ArticleBrief(id=article.id,
+                         title=article.title,
+                         content=article.content)
+            for article in category.articles
+        ]
+        return CategoryWithArticles(
+            id=category.id,
+            name=category.name,
+            description=category.description,
+            articles=articles,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
