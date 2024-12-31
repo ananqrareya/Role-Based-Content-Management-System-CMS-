@@ -11,30 +11,12 @@ from unicodedata import category
 from app.entities.schemas.article_schema import AuthorArticleResponse, ArticleResponse
 from app.services.article_service import ArticleService
 from app.services.user_service import UserService
+from app.utils.auth_utils import get_current_author
 from app.utils.fastapi.dependencies import require_role
 
 router=APIRouter()
 
 
-def get_current_author(request: Request, user_service: UserService = Depends()):
-    current_user = request.state.user
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    author_id = current_user.get("user_id")
-    if not author_id:
-        raise HTTPException(status_code=400, detail="user_id not found in token")
-
-    try:
-        author_id_uuid = UUID(author_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid user_id format")
-
-    author = user_service.get_user_by_id(author_id_uuid)
-    if not author:
-        raise HTTPException(status_code=404, detail="Author not found")
-
-    return author
 @router.get(
     "/articles/",
     response_model=List[AuthorArticleResponse],

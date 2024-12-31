@@ -51,6 +51,32 @@ async def register_user(user: RegisterRequest,
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.post("/editor",
+            summary="Add Editor User by Admin",
+            response_model=RegisterResponse,
+dependencies=[Depends(require_role(["Admin"]))],
+)
+async def new_editor(editor: RegisterRequest,
+                     user_service: UserService = Depends()):
+    try:
+        if(editor.role!="Editor"):
+            raise HTTPException(  status_code=403, detail="You cannot another role.")
+        editor_user = user_service.register_user(editor)
+        message = "Editor Added successfully"
+        return RegisterResponse(
+            user=UserResponse(
+                id=editor_user.id,
+                username=editor_user.username,
+                email=editor_user.email,
+                is_active=editor_user.is_active,
+                created_at=editor_user.created_at,
+                updated_at=editor_user.updated_at,
+                role=editor_user.role.name,
+            ),
+            message=message,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.put(
     "/{user_id}/role",

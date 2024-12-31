@@ -15,13 +15,7 @@ from app.routers.author_router import router as author_routes
 from app.routers.reader_router import router as reader_routes
 from app.utils.fastapi.middleware import JWTMiddleware
 
-PUBLIC_PATHS = [
-    "/",
-    "/api/auth/login",
-    "/api/users/register",
-    "/docs",
-    "/openapi.json",
-]
+
 
 
 app = FastAPI(
@@ -30,7 +24,7 @@ app = FastAPI(
 )
 
 
-app.add_middleware(JWTMiddleware, public_paths=PUBLIC_PATHS)
+app.add_middleware(JWTMiddleware)
 
 
 

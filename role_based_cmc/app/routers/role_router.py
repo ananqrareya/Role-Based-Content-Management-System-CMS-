@@ -18,7 +18,9 @@ from app.utils.fastapi.dependencies import require_role
 router = APIRouter(dependencies=[Depends(require_role(["Admin"]))])
 
 
-@router.get("/", response_model=List[RoleSchema])
+@router.get("/", response_model=List[RoleSchema],
+dependencies = [Depends(require_role(["Admin"]))]
+)
 async def get_roles(role_service: RoleService = Depends()):
     try:
         roles = role_service.get_all_role()
@@ -36,6 +38,7 @@ async def get_roles(role_service: RoleService = Depends()):
     "/{role_id}/users/",
     response_model=RoleWithUsersSchema,
     summary="get role with users",
+dependencies = [Depends(require_role(["Admin"]))]
 )
 async def get_role_with_users(role_id: UUID,
                               role_service: RoleService = Depends()):

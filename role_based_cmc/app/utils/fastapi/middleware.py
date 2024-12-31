@@ -7,11 +7,11 @@ from fastapi import HTTPException
 from app.core.database import get_db
 from app.services.user_token_service import UserTokenService
 from app.utils.auth_utils import verify_access_token
-
+from app.core.config import settings
 
 class JWTMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, public_paths: list[str] = None):
-        self.public_paths = public_paths or []
+    def __init__(self, app):
+        self.public_paths = settings.PUBLIC_PATHS or []
         super().__init__(app)
     async def dispatch(self, request: Request, call_next):
         if request.url.path in self.public_paths:

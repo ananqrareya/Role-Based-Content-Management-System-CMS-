@@ -1,11 +1,13 @@
 import jwt
 from datetime import datetime, timedelta, timezone
+
+from fastapi.params import Depends
 from starlette.requests import Request
 from fastapi import HTTPException
 from app.core.config import settings
 from app.services.user_service import UserService
 from app.services.user_token_service import UserTokenService
-
+from uuid import UUID
 
 def create_access_token(
     data: dict, user_service: UserService, user_token_service: UserTokenService
@@ -69,3 +71,25 @@ def verify_access_token(request: Request,
             status_code=500,
             detail="Internal server error during token verification"
         )
+
+
+
+def get_current_author(request: Request, user_service: UserService = Depends()):
+    current_user = request.state.user
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    author_id = current_user.get("user_id")
+    if not author_id:
+        raise HTTPException(status_code=400, detail="user_id not found in token")
+
+    try:
+        author_id_uuid = UUID(author_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user_id format")
+
+    author = user_service.get_user_by_id(author_id_uuid)
+    if not author:
+        raise HTTPException(status_code=404, detail="Author not found")
+
+    return author
