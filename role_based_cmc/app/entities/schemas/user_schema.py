@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field, EmailStr, validator
+from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict
 from uuid import UUID
 
 
@@ -9,7 +9,8 @@ class UserSchema(BaseModel):
     email: EmailStr
     password: str
 
-    @validator("password")
+    @field_validator("password")
+    @classmethod
     def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters")
@@ -39,8 +40,8 @@ class UserResponse(BaseModel):
     updated_at: datetime
     role: str = Field(..., description="User's role in the system")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "550e8400-e29b-41d4-a716-446655440000",
                 "username": "ananqrareya",
@@ -51,13 +52,14 @@ class UserResponse(BaseModel):
                 "role": "Reader Or Author",
             }
         }
+    )
 
 
 class RegisterRequest(UserSchema):
     role: str = Field(..., description="User's role in the system")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "username": "ananqrareya",
@@ -67,14 +69,15 @@ class RegisterRequest(UserSchema):
                 }
             ]
         }
+    )
 
 
 class RegisterResponse(BaseModel):
     user: UserResponse
     message: str
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "message": "User registered successfully.",
                 "user": {
@@ -88,21 +91,22 @@ class RegisterResponse(BaseModel):
                 },
             }
         }
+    )
 
 
 class UserUpdateRequest(BaseModel):
     role: str
 
-    class Config:
-        json_schema_extra = {"example": {"role": "Editor"}}
+    model_config = ConfigDict(json_schema_extra={"example": {"role": "Editor"}})
+
 
 
 class UserUpdateResponse(BaseModel):
     message: str
     user: UserResponse
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "message": "User Update Role successfully.",
                 "user": {
@@ -116,3 +120,4 @@ class UserUpdateResponse(BaseModel):
                 },
             }
         }
+    )

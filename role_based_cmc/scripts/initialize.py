@@ -46,10 +46,8 @@ def initialize_data():
     create_database_if_not_exists()
 
     session = SessionLocal()
-    role_repository = RoleRepository(session)
-    role_service = RoleService(role_repository)
-    user_repository = UserRepository(session)
-    user_service = UserService(user_repository, role_repository)
+    role_service = RoleService(session)
+    user_service = UserService(session)
 
     try:
         role_service.create_role_if_not_exists("Admin")
@@ -67,5 +65,5 @@ def initialize_data():
     finally:
         session.close()
 
-
+create_database_if_not_exists()
 initialize_data()

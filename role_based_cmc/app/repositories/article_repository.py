@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from app.entities.enums.article_status import ArticleStatus
+from app.entities.enums import ArticleStatus
 from app.entities.models import Articles
 
 from uuid import UUID

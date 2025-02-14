@@ -21,8 +21,8 @@ class ArticleSchema(BaseModel):
                     {
                         "title": "FastAPI Guide",
                         "content": "Comprehensive guide on FastAPI.",
-                        "tags": ["Python", "FastAPI"],
-                        "category": "Programming",
+                        "tags": ["7ec67df5-da7d-4716-866d-3ea46b88087a", "eec9f568-8552-4323-a7c3-71de1dcbf5b2"],
+                        "category": "eec9f568-8552-4323-a7c3-71de1dcbf5b2",
                     }
                 ]
             }
@@ -82,7 +82,6 @@ class ArticleStatusUpdate(BaseModel):
     class Config:
         json_schema_extra = {"example": {"status": "In Review"}}
 
-
 class ArticleResponse(ArticleSchema):
     id: UUID
     status: str
@@ -132,3 +131,5 @@ class AuthorArticleResponse(BaseModel):
                 }
             ]
         }
+
+

@@ -3,7 +3,7 @@ import secrets
 def generate_secret_key():
     return secrets.token_hex(32)
 class BaseSetting(BaseSettings):
-    DB_NAME: str = "anan"
+    DB_NAME: str = "cms_role_based"
     DB_USER: str = "postgres"
     DB_PASSWORD: str = "root"
     DB_HOST: str = "localhost"

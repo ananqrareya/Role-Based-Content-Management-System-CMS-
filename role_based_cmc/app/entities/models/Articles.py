@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, Text, Enum, ForeignKey, TIMESTAMP, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.core.database import Base
+from app.entities.enums import ArticleStatus
 
 
 class Articles(Base):
@@ -22,10 +23,9 @@ class Articles(Base):
         nullable=True,
     )
     status = Column(
-        Enum("Draft", "In Review",
-             "Published", "Rejected", name="article_status"),
+        Enum(ArticleStatus),
         nullable=False,
-        default="Draft",
+        default=ArticleStatus.DRAFT
     )
     created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     updated_at = Column(

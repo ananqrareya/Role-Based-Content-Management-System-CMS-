@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.core.database_config import SessionLocal, engine
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 

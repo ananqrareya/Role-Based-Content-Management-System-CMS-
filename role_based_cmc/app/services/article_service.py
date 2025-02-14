@@ -30,22 +30,29 @@ class ArticleService:
         self.user_repository=UserRepository(db)
 
     def check_tag_name_with_aritcle(self,tag_name:str)->Tags:
+
         tag=self.tags_repository.get_tag_by_name(tag_name)
         if tag is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Tag '{tag_name}' not found")
+            raise HTTPException(status_code=404, detail=f"Tag '{tag_name}' not found")
+        return tag
+    def check_tag_id_with_aritcle(self,tag_id:str)->Tags:
+        tag=self.tags_repository.get_tag_by_id(tag_id)
+        if tag is None:
+            raise HTTPException(status_code=404, detail=f"Tag '{tag_id}' not found")
         return tag
 
     def check_category_name_with_article(self,category_name:str)->Categories:
+
         category=self.categories_repository.get_category_by_name(category_name)
+
         if category is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Category '{category_name}' not found")
+            raise HTTPException(status_code=404,detail=f"Category '{category_name}' not found")
         return category
-
-
-
-
-
-
+    def check_category_id_with_article(self,category_id:str)->Categories:
+        category=self.categories_repository.get_category_by_id(category_id)
+        if category is None:
+            raise HTTPException(status_code=404,detail=f"Category '{category_id}' not found")
+        return category
 
     def create_article(self,article:dict)->Articles:
         new_article=Articles(
@@ -53,7 +60,7 @@ class ArticleService:
             content=article['content'],
             author_id=article['author_id'],
             category_id=article['category_id'],
-            status=ArticleStatus.DRAFT,
+            status=ArticleStatus.DRAFT.value,
             tags=article["tags"]
         )
         return self.article_repository.add_article(new_article)
@@ -79,12 +86,12 @@ class ArticleService:
 
         return article_db
 
-    def delete_article(self,id:UUID)->Articles:
+    def delete_article(self,id:UUID):
         current_article=self.article_repository.get_article_by_id(id)
         if current_article is None:
             raise HTTPException(status_code=404,detail=f"Article '{id}' not found")
         self.article_repository.delete_article(current_article)
-        return current_article
+
 
     def update_article_status(self,article_id:UUID,article_status:ArticleStatus)->Articles:
 

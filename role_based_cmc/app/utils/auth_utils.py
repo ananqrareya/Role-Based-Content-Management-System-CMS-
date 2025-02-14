@@ -25,6 +25,9 @@ def create_access_token(
 
     user = user_service.get_user_by_username(data["sub"])
 
+    if not user:
+        raise ValueError("User not found")
+
     user_token_service.store_user_token(user.id, encoded_jwt, expire)
 
     return encoded_jwt
@@ -66,11 +69,7 @@ def verify_access_token(request: Request,
 
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token is invalid")
-    except Exception:
-        raise HTTPException(
-            status_code=500,
-            detail="Internal server error during token verification"
-        )
+
 
 
 

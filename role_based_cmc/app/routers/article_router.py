@@ -5,7 +5,7 @@ from typing import List, Optional
 from fastapi.params import Depends
 from starlette.requests import Request
 
-
+from app.entities.enums import ArticleStatus
 from app.entities.models import Articles
 from app.entities.schemas.article_schema import (
     ArticleCreate,
@@ -13,7 +13,7 @@ from app.entities.schemas.article_schema import (
     ArticleResponse,
     ArticleStatusUpdate,
 )
-from app.entities.enums.article_status import ArticleStatus
+
 from uuid import UUID
 
 from app.services.article_service import ArticleService
@@ -42,12 +42,17 @@ async def create_article(article: ArticleCreate,
          print("the user:",current_user)
          if not current_user:
              raise HTTPException(status_code=401, detail="Not authenticated")
-
-         category=article_service.check_category_name_with_article(article.category)
+         try:
+             category=article_service.check_category_id_with_article(article.category)
+         except HTTPException as e:
+             raise HTTPException(status_code=e.status_code, detail=e.detail)
          valid_tags = []
          for tag in article.tags:
-            valid_tag = article_service.check_tag_name_with_aritcle(tag)
-            valid_tags.append(valid_tag)
+             try:
+                 valid_tag = article_service.check_tag_id_with_aritcle(tag)
+                 valid_tags.append(valid_tag)
+             except HTTPException as e:
+                 raise HTTPException(status_code=e.status_code, detail=e.detail)
 
          new_article_data = {
               "title": article.title,
@@ -68,6 +73,10 @@ async def create_article(article: ArticleCreate,
              created_at=new_article.created_at,
              updated_at=new_article.updated_at,
          )
+
+
+    except HTTPException as http_err:
+        raise http_err
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -165,9 +174,10 @@ async def update_article(article_id: UUID, article_update: ArticleUpdate,article
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 @router.delete(
     "/{article_id}",
-    response_model=ArticleResponse,
+    response_model=dict,
     summary="Delete an Article (Admin,Editor)",
     description="""
     Deletes an article by its ID. Only Admins and Editors can perform this action.
@@ -176,18 +186,11 @@ async def update_article(article_id: UUID, article_update: ArticleUpdate,article
 )
 async def delete_article(article_id: UUID,article_service:ArticleService=Depends()):
     try:
-        article_deleted=article_service.delete_article(article_id)
-        return ArticleResponse(
-            id=article_deleted.id,
-            title=article_deleted.title,
-            content=article_deleted.content,
-            tags=[tag.name for tag in article_deleted.tags],
-            category=article_deleted.category.name,
-            status=article_deleted.status,
-            author=article_deleted.author.username,
-            created_at=article_deleted.created_at,
-            updated_at=article_deleted.updated_at,
-        )
+        article_service.delete_article(article_id)
+        return {
+            "message": "Article deleted successfully",
+            "article_id": str(article_id)
+        }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -219,6 +222,7 @@ def update_article_status(article_id: UUID, status_update: ArticleStatusUpdate,a
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 @router.put(
     "/{article_id}/publish",
     summary="Publish Article",

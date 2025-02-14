@@ -7,12 +7,7 @@ class RoleRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_role_by_name(self, role_name: str) -> Roles:
-        return (self.session.query(Roles)
-                .filter(Roles.name == role_name).first())
 
-    def get_role_by_id(self, role_id: UUID) -> Roles:
-        return self.session.query(Roles).filter_by(id=role_id).first()
 
     def create_role(self, role: Roles) -> Roles:
 
@@ -33,3 +28,10 @@ class RoleRepository:
         return (self.session.query(Roles)
                 .options(joinedload(Roles.users))
                 .filter_by(id=role.id).first())
+
+    def get_role_by_name(self, role_name: str) -> Roles:
+        return (self.session.query(Roles)
+                .filter(Roles.name == role_name).first())
+
+    def get_role_by_id(self, role_id: UUID) -> Roles:
+        return self.session.query(Roles).filter_by(id=role_id).first()
