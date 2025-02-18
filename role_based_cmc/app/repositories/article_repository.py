@@ -37,7 +37,7 @@ class ArticleRepository:
         self, article_db: Articles, article_update: ArticleUpdate
     ) -> Articles:
         try:
-            update_data = article_update.dict(exclude_unset=True)
+            update_data = article_update.model_dump(exclude_unset=True)
             for key, value in update_data.items():
                 if value is not None:
                     setattr(article_db, key, value)

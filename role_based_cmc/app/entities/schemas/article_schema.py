@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 
 from app.entities.enums.article_status import ArticleStatus
@@ -14,18 +14,21 @@ class ArticleSchema(BaseModel):
     tags: List[str]
     category: str
 
-    class Config:
-        class Config:
-            json_schema_extra = {
-                "examples": [
-                    {
-                        "title": "FastAPI Guide",
-                        "content": "Comprehensive guide on FastAPI.",
-                        "tags": ["7ec67df5-da7d-4716-866d-3ea46b88087a", "eec9f568-8552-4323-a7c3-71de1dcbf5b2"],
-                        "category": "eec9f568-8552-4323-a7c3-71de1dcbf5b2",
-                    }
-                ]
-            }
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "title": "FastAPI Guide",
+                    "content": "Comprehensive guide on FastAPI.",
+                    "tags": [
+                        "7ec67df5-da7d-4716-866d-3ea46b88087a",
+                        "eec9f568-8552-4323-a7c3-71de1dcbf5b2",
+                    ],
+                    "category": "eec9f568-8552-4323-a7c3-71de1dcbf5b2",
+                }
+            ]
+        }
+    )
 
 
 class ArticleBrief(BaseModel):
@@ -33,19 +36,20 @@ class ArticleBrief(BaseModel):
     title: str
     content: str
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "660e8400-e29b-41d4-a716-446655440000",
                 "title": "Introduction to FastAPI",
                 "content": "Learn the basics of FastAPI...",
             }
         }
+    )
 
 
 class ArticleCreate(ArticleSchema):
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "title": "How to Use Pydantic",
@@ -55,6 +59,7 @@ class ArticleCreate(ArticleSchema):
                 }
             ]
         }
+    )
 
 
 class ArticleUpdate(BaseModel):
@@ -63,8 +68,8 @@ class ArticleUpdate(BaseModel):
     tags: Optional[List[str]] = Field(None)
     category: Optional[str] = Field(None)
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "title": "Updated FastAPI Guide",
@@ -74,14 +79,16 @@ class ArticleUpdate(BaseModel):
                 }
             ]
         }
+    )
+
 
 
 class ArticleStatusUpdate(BaseModel):
     status: ArticleStatus
 
-    class Config:
-        json_schema_extra = {"example": {"status": "In Review"}}
-
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"status": "In Review"}}
+    )
 class ArticleResponse(ArticleSchema):
     id: UUID
     status: str
@@ -89,8 +96,8 @@ class ArticleResponse(ArticleSchema):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "title": "FastAPI Guide",
@@ -104,6 +111,7 @@ class ArticleResponse(ArticleSchema):
                 }
             ]
         }
+    )
 
 
 class AuthorArticleResponse(BaseModel):
@@ -116,8 +124,8 @@ class AuthorArticleResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "id": "660e8400-e29b-41d4-a716-446655440000",
@@ -131,5 +139,4 @@ class AuthorArticleResponse(BaseModel):
                 }
             ]
         }
-
-
+    )

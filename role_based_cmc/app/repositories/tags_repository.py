@@ -11,7 +11,7 @@ class TagsRepository:
         return self.session.query(Tags).filter_by(name=tag_name).first()
 
     def get_tag_by_id(self, tag_id: UUID) -> Tags:
-        return self.session.query(Tags).get(tag_id)
+        return self.session.get(Tags, tag_id)
 
     def add_tag(self, tag: Tags):
         try:

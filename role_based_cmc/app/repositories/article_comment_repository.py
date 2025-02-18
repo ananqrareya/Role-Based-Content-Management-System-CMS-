@@ -44,8 +44,7 @@ class ArticleCommentRepository:
                 .first()
             )
             if comment is None:
-                raise ValueError(f"Comment with ID"
-                                 f" {comment.id} does not exist.")
+                raise ValueError("Comment does not exist.")
 
             self.db.delete(comment)
             self.db.commit()

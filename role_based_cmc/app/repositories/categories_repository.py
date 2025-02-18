@@ -18,7 +18,7 @@ class CategoriesRepository:
         )
 
     def get_category_by_id(self, category_id: UUID) -> Categories:
-        return self.session.query(Categories).get(category_id)
+        return self.session.get(Categories, category_id)
 
     def get_category_by_name(self, name: str) -> Categories:
         return (self.session.query(Categories)
@@ -37,7 +37,7 @@ class CategoriesRepository:
         self, category_db: Categories, category_update: CategoryUpdate
     ) -> Categories:
         try:
-            update_data = category_update.dict(exclude_unset=True)
+            update_data = category_update.model_dump(exclude_unset=True)
             for key, value in update_data.items():
                 if value is not None:
                     setattr(category_db, key, value)

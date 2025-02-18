@@ -1,16 +1,14 @@
 from typing import List
 
 from black import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from uuid import UUID
 
 
 class CommentCreate(BaseModel):
     text: str
 
-    class Config:
-        json_schema_extra = {"example": {"text": "This is a helpful article!"}}
-
+    model_config = ConfigDict(json_schema_extra={"example": {"text": "This is a helpful article!"}})
 
 class CommentResponse(BaseModel):
     id: UUID
@@ -19,8 +17,8 @@ class CommentResponse(BaseModel):
     user: str
     created_at: datetime
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "660e8400-e29b-41d4-a716-446655440000",
                 "content": "This is a helpful article!",
@@ -29,15 +27,13 @@ class CommentResponse(BaseModel):
                 "created_at": "2024-11-18T15:00:00",
             }
         }
-
+    )
 
 class CommentUpdate(BaseModel):
     text: str
 
-    class Config:
-        json_schema_extra = {
-            "example": {"text": "This is the updated comment content."}
-        }
+    model_config = ConfigDict(json_schema_extra={"example": {"text": "This is the updated comment content."}})
+
 
 
 class Comment(BaseModel):
@@ -46,8 +42,8 @@ class Comment(BaseModel):
     user: str
     created_at: datetime
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "660e8400-e29b-41d4-a716-446655440000",
                 "content": "This is a helpful article!",
@@ -55,14 +51,15 @@ class Comment(BaseModel):
                 "created_at": "2024-11-18T15:00:00",
             }
         }
+    )
 
 
 class CommentInArticle(BaseModel):
     article_title: str
     comments: List[Comment]
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "article_title": "Understanding Python Decorators",
                 "comments": [
@@ -74,11 +71,11 @@ class CommentInArticle(BaseModel):
                     },
                     {
                         "id": "660e8400-e29b-41d4-a716-446655440002",
-                        "content": "This cleared up"
-                                   " a lot of confusion for me.",
+                        "content": "This cleared up a lot of confusion for me.",
                         "user_id": "123e4567-e89b-12d3-a456-426614174002",
                         "created_at": "2024-11-19T12:00:00",
                     },
                 ],
             }
         }
+    )

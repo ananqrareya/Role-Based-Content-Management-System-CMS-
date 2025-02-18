@@ -20,7 +20,7 @@ class UserTokenRepository:
             self.db.refresh(token)
             print(
                 f"Token successfully saved: {token.token[:20]}..."
-            )  # Log for confirmation
+            )
 
             return token
         except Exception as e:

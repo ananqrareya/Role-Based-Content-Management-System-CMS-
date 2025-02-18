@@ -1,6 +1,6 @@
 
 
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr,ConfigDict
 from uuid import UUID
 
 
@@ -12,14 +12,15 @@ class RoleSchema(BaseModel):
     )
     description: str = Field(..., description="Description of the role")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "550e8400-e29b-41d4-a716-446655440000",
                 "name": "Reader",
                 "description": "Can only view published articles",
             }
         }
+    )
 
 
 class UserSchema(BaseModel):

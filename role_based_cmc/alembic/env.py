@@ -22,8 +22,10 @@ from app.entities.models.Tags import Tags
 from app.entities.models.Articles import Articles
 from app.entities.models.ArticleTags import ArticleTags
 from app.entities.models.Comments import Comments
+
 from app.core.database import Base
 target_metadata = Base.metadata
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

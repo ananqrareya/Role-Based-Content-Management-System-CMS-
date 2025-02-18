@@ -1,3 +1,4 @@
+from psycopg2 import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 from app.entities.models.Roles import Roles
 from uuid import UUID
@@ -16,10 +17,9 @@ class RoleRepository:
             self.session.commit()
             self.session.refresh(role)
             return role
-        except Exception as e:
+        except IntegrityError as e:
             self.session.rollback()
-            print(f"Error while creating role: {e}")
-            return None
+            raise e
 
     def get_all_roles(self) -> list[Roles]:
         return self.session.query(Roles).all()
